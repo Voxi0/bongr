@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-
 use crate::components::*;
+use crate::consts::*;
 
-// Constants
-const PADDLE_SIZE: Vec2 = Vec2::new(20.0, 200.0);
-
+// Paddle component
 #[derive(Component)]
 struct Paddle {
     upKey: KeyCode,
@@ -21,10 +19,14 @@ impl Plugin for PaddlePlugin {
 }
 
 // Creates the 2 paddles/players
-fn initPaddles(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>, window: Single<&Window>) {
+fn initPaddles(
+    mut commands: Commands,
+    window: Single<&Window>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     // Paddle properties
-    let paddleSize: Vec2 = Vec2::new(20.0, 200.0);
-    let paddleMesh = meshes.add(Rectangle::new(paddleSize.x, paddleSize.y));
+    let paddleMesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
     let paddleMaterial = materials.add(Color::srgba(1.0, 0.0, 0.0, 1.0));
 
     // In Bevy, (0,0) refers to the center of the screen
@@ -35,34 +37,40 @@ fn initPaddles(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut mat
 
     // Create the 2 paddles/players
     commands.spawn((
+        Mesh2d(paddleMesh.clone()),
+        MeshMaterial2d(paddleMaterial.clone()),
+        MovementSpeed(PADDLE_MOVE_SPEED),
         Paddle {
             upKey: KeyCode::KeyW,
             downKey: KeyCode::KeyS,
         },
-        MovementSpeed(300.0),
-        Mesh2d(paddleMesh.clone()),
-        MeshMaterial2d(paddleMaterial.clone()),
         Transform {
-            translation: Vec3::new(windowLeftEdge + (paddleSize.x + 10.0), 0.0, 0.0),
+            translation: Vec3::new(windowLeftEdge + (PADDLE_SIZE.x + 10.0), 0.0, 0.0),
             ..default()
         }
     ));
     commands.spawn((
-        Paddle {
-            upKey: KeyCode::KeyW,
-            downKey: KeyCode::KeyS,
-        },
-        MovementSpeed(300.0),
         Mesh2d(paddleMesh.clone()),
         MeshMaterial2d(paddleMaterial.clone()),
+        MovementSpeed(PADDLE_MOVE_SPEED),
+        Paddle {
+            upKey: KeyCode::ArrowUp,
+            downKey: KeyCode::ArrowDown,
+        },
         Transform {
-            translation: Vec3::new(windowRightEdge - (paddleSize.x + 10.0), 0.0, 0.0),
+            translation: Vec3::new(windowRightEdge - (PADDLE_SIZE.x + 10.0), 0.0, 0.0),
             ..default()
         }
     ));
 }
 
-fn updatePaddle(mut query: Query<(&mut Transform, &Paddle, &MovementSpeed)>, keys: Res<ButtonInput<KeyCode>>, time: Res<Time>, window: Single<&Window>) {
+// Handle paddle/player movement and such
+fn updatePaddle(
+    mut query: Query<(&mut Transform, &Paddle, &MovementSpeed)>,
+    window: Single<&Window>,
+    keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+) {
     for (mut transform, paddle, moveSpeed) in query.iter_mut() {
         // Movement
         if keys.pressed(paddle.upKey) {

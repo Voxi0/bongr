@@ -6,6 +6,7 @@ use bevy::{
     input::common_conditions::input_just_pressed,
 };
 
+pub mod consts;
 pub mod components;
 mod paddle;
 
