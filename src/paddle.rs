@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use avian2d::prelude::*;
 use crate::components::*;
 use crate::consts::*;
 
@@ -27,7 +28,7 @@ fn initPaddles(
 ) {
     // Paddle properties
     let paddleMesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
-    let paddleMaterial = materials.add(Color::srgba(1.0, 0.0, 0.0, 1.0));
+    let paddleMaterial = materials.add(PADDLE_COLOR);
 
     // In Bevy, (0,0) refers to the center of the screen
     // We do these calculations to properly figure out where to position the paddles
@@ -39,6 +40,10 @@ fn initPaddles(
     commands.spawn((
         Mesh2d(paddleMesh.clone()),
         MeshMaterial2d(paddleMaterial.clone()),
+        RigidBody::Kinematic,
+        Collider::rectangle(PADDLE_SIZE.x, PADDLE_SIZE.y),
+        Friction::ZERO,
+        Restitution::PERFECTLY_ELASTIC,
         MovementSpeed(PADDLE_MOVE_SPEED),
         Paddle {
             upKey: KeyCode::KeyW,
@@ -52,6 +57,10 @@ fn initPaddles(
     commands.spawn((
         Mesh2d(paddleMesh.clone()),
         MeshMaterial2d(paddleMaterial.clone()),
+        RigidBody::Kinematic,
+        Collider::rectangle(PADDLE_SIZE.x, PADDLE_SIZE.y),
+        Friction::ZERO,
+        Restitution::PERFECTLY_ELASTIC,
         MovementSpeed(PADDLE_MOVE_SPEED),
         Paddle {
             upKey: KeyCode::ArrowUp,
