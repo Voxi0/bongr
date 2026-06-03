@@ -15,7 +15,7 @@ pub struct PaddlePlugin;
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, initPaddles);
-        app.add_systems(Update, updatePaddle);
+        app.add_systems(FixedUpdate, updatePaddle);
     }
 }
 
@@ -75,21 +75,21 @@ fn initPaddles(
 
 // Handle paddle/player movement and such
 fn updatePaddle(
-    mut query: Query<(&mut Transform, &Paddle, &MovementSpeed)>,
+    mut query: Query<(&mut Position, &Paddle, &MovementSpeed)>,
     window: Single<&Window>,
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    for (mut transform, paddle, moveSpeed) in query.iter_mut() {
+    for (mut position, paddle, moveSpeed) in query.iter_mut() {
         // Movement
         if keys.pressed(paddle.upKey) {
-            transform.translation.y += moveSpeed.0 * time.delta_secs();
+            position.y += moveSpeed.0 * time.delta_secs();
         }
         if keys.pressed(paddle.downKey) {
-            transform.translation.y -= moveSpeed.0 * time.delta_secs();
+            position.y -= moveSpeed.0 * time.delta_secs();
         }
 
         // Stop the paddle from moving out of the screen
-        transform.translation.y = transform.translation.y.clamp((window.height() - PADDLE_SIZE.y) / -2.0, (window.height() - PADDLE_SIZE.y) / 2.0);
+        position.y = position.y.clamp((window.height() - PADDLE_SIZE.y) / -2.0, (window.height() - PADDLE_SIZE.y) / 2.0);
     }
 }
