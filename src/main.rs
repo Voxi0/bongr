@@ -83,10 +83,7 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
         .spawn((
             Sensor,
             CollisionEventsEnabled,
-            RigidBody::Static,
             Collider::rectangle(1.0, window.height()),
-            Restitution::PERFECTLY_ELASTIC,
-            Friction::ZERO,
             Transform::from_xyz(window.width() / -2.0, 0.0, 0.0),
         ))
         .observe(handleHorizontalWallCollision(1));
@@ -96,10 +93,7 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
         .spawn((
             Sensor,
             CollisionEventsEnabled,
-            RigidBody::Static,
             Collider::rectangle(1.0, window.height()),
-            Restitution::PERFECTLY_ELASTIC,
-            Friction::ZERO,
             Transform::from_xyz(window.width() / 2.0, 0.0, 0.0),
         ))
         .observe(handleHorizontalWallCollision(0));
