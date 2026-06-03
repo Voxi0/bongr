@@ -3,6 +3,7 @@
 // Bevy
 use bevy::{
     prelude::*,
+    window::PresentMode,
     input::common_conditions::input_just_pressed,
 };
 
@@ -17,18 +18,40 @@ mod ball;
 
 // Main application
 fn main() {
-    App::new()
-        .insert_resource(Gravity(Vec2::ZERO))
-        .insert_resource(ClearColor(consts::BG_COLOR))
-        .add_plugins((
-            DefaultPlugins,
-            PhysicsPlugins::default(),
-            paddle::PaddlePlugin,
-            ball::BallPlugin,
-        ))
-        .add_systems(Startup, startup)
-        .add_systems(Update, exitSystem.run_if(input_just_pressed(KeyCode::Escape)))
-        .run();
+    let mut app = App::new();
+
+    // Initialize all game resources
+    app.insert_resource(Gravity(Vec2::ZERO));
+    app.insert_resource(ClearColor(consts::BG_COLOR));
+
+    // Add all necessary plugins
+    app.add_plugins((
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Bongr".into(),
+                present_mode: PresentMode::AutoVsync,
+                ..default()
+            }),
+            ..default()
+        }),
+        PhysicsPlugins::default(),
+        paddle::PaddlePlugin,
+        ball::BallPlugin,
+    ));
+    
+    // Add some general systems
+    app.add_systems(Startup, startup);
+    app.add_systems(Update, exitSystem.run_if(input_just_pressed(KeyCode::Escape)));
+
+    // Debug build specific stuff
+    #[cfg(debug_assertions)]
+    {
+        use bevy::diagnostic::LogDiagnosticsPlugin;
+        app.add_plugins(LogDiagnosticsPlugin::default());
+    }
+
+    // Run the application
+    app.run();
 }
 
 fn startup(mut commands: Commands, window: Single<&Window>) {
@@ -74,7 +97,7 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
     ));
 }
 
-// Terminate the program if the escape key is pressed
+// Terminate the program with a successful exit code
 fn exitSystem(mut msgWriter: MessageWriter<AppExit>) {
     msgWriter.write(AppExit::Success);
 }
