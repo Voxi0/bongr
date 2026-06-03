@@ -13,6 +13,7 @@ use avian2d::prelude::*;
 // Import my custom stuff
 pub mod consts;
 pub mod components;
+mod scoreboard;
 mod paddle;
 mod ball;
 
@@ -35,6 +36,7 @@ fn main() {
             ..default()
         }),
         PhysicsPlugins::default(),
+        scoreboard::ScoreboardPlugin,
         paddle::PaddlePlugin,
         ball::BallPlugin,
     ));
@@ -58,43 +60,75 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
     // Spawn a neat 2D camera
     commands.spawn(Camera2d);
 
-    let wall_thickness = 10.0;
-
-    // --- TOP WALL ---
+    // Top wall
     commands.spawn((
         RigidBody::Static,
-        Collider::rectangle(window.width(), wall_thickness),
+        Collider::rectangle(window.width(), 1.0),
         Restitution::PERFECTLY_ELASTIC,
         Friction::ZERO,
         Transform::from_xyz(0.0, window.height() / 2.0, 0.0),
     ));
 
-    // --- BOTTOM WALL ---
+    // Bottom wall
     commands.spawn((
         RigidBody::Static,
-        Collider::rectangle(window.width(), wall_thickness),
+        Collider::rectangle(window.width(), 1.0),
         Restitution::PERFECTLY_ELASTIC,
         Friction::ZERO,
         Transform::from_xyz(0.0, window.height() / -2.0, 0.0),
     ));
 
-    // --- LEFT WALL ---
-    commands.spawn((
-        RigidBody::Static,
-        Collider::rectangle(wall_thickness, window.height()),
-        Restitution::PERFECTLY_ELASTIC,
-        Friction::ZERO,
-        Transform::from_xyz(window.width() / -2.0, 0.0, 0.0),
-    ));
+    // Left wall
+    commands
+        .spawn((
+            Sensor,
+            CollisionEventsEnabled,
+            RigidBody::Static,
+            Collider::rectangle(1.0, window.height()),
+            Restitution::PERFECTLY_ELASTIC,
+            Friction::ZERO,
+            Transform::from_xyz(window.width() / -2.0, 0.0, 0.0),
+        ))
+        .observe(handleHorizontalWallCollision(1));
 
-    // --- RIGHT WALL ---
-    commands.spawn((
-        RigidBody::Static,
-        Collider::rectangle(wall_thickness, window.height()),
-        Restitution::PERFECTLY_ELASTIC,
-        Friction::ZERO,
-        Transform::from_xyz(window.width() / 2.0, 0.0, 0.0),
-    ));
+    // Right wall
+    commands
+        .spawn((
+            Sensor,
+            CollisionEventsEnabled,
+            RigidBody::Static,
+            Collider::rectangle(1.0, window.height()),
+            Restitution::PERFECTLY_ELASTIC,
+            Friction::ZERO,
+            Transform::from_xyz(window.width() / 2.0, 0.0, 0.0),
+        ))
+        .observe(handleHorizontalWallCollision(0));
+}
+
+// Updates the player scores and the scoreboard when the ball hits either the left/right wall
+// It's a normal function and not a system so it has to be assigned to the walls manually
+// The player scores are a tuple and the function needs the index to figure out which player got the
+// score
+fn handleHorizontalWallCollision(playerIndex: usize) -> impl Fn(
+    On<CollisionStart>, 
+    Query<&ball::Ball>, 
+    Single<&mut Text, With<scoreboard::Scoreboard>>, 
+    ResMut<scoreboard::Scores>
+) {
+    move |trigger, colliding_with, mut scoreboard, mut scores| {
+        if colliding_with.contains(trigger.collider2) {
+            // Right wall hit - Player 1 (Index 0) scored
+            // Left wall hit - Player 2 (Index 1) scored
+            if playerIndex == 0 {
+                scores.0 += 1;
+            } else {
+                scores.1 += 1;
+            }
+
+            // Update the scoreboard to display the new scores
+            scoreboard.0 = format!("{} : {}", scores.0, scores.1);
+        }
+    }
 }
 
 // Terminate the program with a successful exit code

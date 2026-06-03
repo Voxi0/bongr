@@ -7,7 +7,7 @@ use rand::prelude::*;
 
 // Ball component
 #[derive(Component)]
-struct Ball;
+pub struct Ball;
 
 // Ball plugin
 pub struct BallPlugin;
