@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use avian2d::prelude::*;
+use crate::components::AppState;
 use crate::consts::*;
 
 // Random number generator
@@ -13,7 +14,7 @@ pub struct Ball;
 pub struct BallPlugin;
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, initBall);
+        app.add_systems(Startup, initBall.run_if(in_state(AppState::InGame)));
     }
 }
 

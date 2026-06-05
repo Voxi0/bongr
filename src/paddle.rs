@@ -14,8 +14,8 @@ struct Paddle {
 pub struct PaddlePlugin;
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, initPaddles);
-        app.add_systems(FixedUpdate, updatePaddle);
+        app.add_systems(Startup, initPaddles.run_if(in_state(AppState::InGame)));
+        app.add_systems(FixedUpdate, updatePaddle.run_if(in_state(AppState::InGame)));
     }
 }
 

@@ -40,9 +40,12 @@ fn main() {
         paddle::PaddlePlugin,
         ball::BallPlugin,
     ));
+
+    // Initialize application/game state
+    app.init_state::<components::AppState>();
     
     // Add some general systems
-    app.add_systems(Startup, startup);
+    app.add_systems(OnEnter(components::AppState::InGame), startup);
     app.add_systems(Update, exitSystem.run_if(input_just_pressed(KeyCode::Escape)));
 
     // Debug build specific stuff
